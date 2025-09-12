@@ -1,0 +1,34 @@
+appId: com.markview.app
+productName: Markview
+directories:
+  output: build
+files:
+  - dist/**/*
+  - package.json
+extraResources:
+  - resources/cli/**/*
+fileAssociations:
+  - ext: md
+    name: Markdown
+    description: Markdown Document
+    role: Editor
+    icon: resources/icons/icon.icns
+  - ext: markdown
+    name: Markdown
+    description: Markdown Document
+    role: Editor
+    icon: resources/icons/icon.icns
+mac:
+  category: public.app-category.productivity
+  icon: resources/icons/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+win:
+  target: nsis
+  icon: resources/icons/icon.ico
+linux:
+  target: AppImage
+  category: Office
+  icon: resources/icons/icon.png

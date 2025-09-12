@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Markview CLI
+# This script opens markdown files in the Markview app
+
+# Get the absolute path of the file
+if [ -z "$1" ]; then
+    echo "Usage: mrkdwn <file.md>"
+    echo "       mrkdwn <directory>"
+    exit 1
+fi
+
+# Resolve the full path
+if [ -f "$1" ] || [ -d "$1" ]; then
+    FULL_PATH=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
+else
+    echo "Error: File or directory not found: $1"
+    exit 1
+fi
+
+# Find the Markview app
+APP_PATH="/Applications/Markview.app"
+if [ ! -d "$APP_PATH" ]; then
+    echo "Error: Markview app not found at $APP_PATH"
+    echo "Please install the Markview app first"
+    exit 1
+fi
+
+# Open the file with the app
+open -a "$APP_PATH" "$FULL_PATH"

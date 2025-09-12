@@ -1,0 +1,208 @@
+import { app, BrowserWindow, ipcMain, dialog, nativeTheme, shell } from 'electron'
+import * as path from 'path'
+import * as fs from 'fs/promises'
+import { statSync, existsSync, chmodSync } from 'fs'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+
+let mainWindow: BrowserWindow | null = null
+let fileToOpen: string | null = null
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    minWidth: 600,
+    minHeight: 400,
+    title: 'Markview',
+    titleBarStyle: 'hiddenInset',
+    trafficLightPosition: { x: 16, y: 16 },
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    }
+  })
+
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL('http://localhost:5555')
+    mainWindow.webContents.openDevTools()
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../index.html'))
+  }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
+
+  mainWindow.once('ready-to-show', () => {
+    if (fileToOpen) {
+      mainWindow?.webContents.send('open-file', fileToOpen)
+      fileToOpen = null
+    }
+  })
+}
+
+app.whenReady().then(createWindow)
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createWindow()
+  }
+})
+
+ipcMain.handle('select-folder', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  })
+  return result.filePaths[0]
+})
+
+ipcMain.handle('select-file', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [
+      { name: 'Markdown Files', extensions: ['md', 'markdown'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  })
+  return result.filePaths[0]
+})
+
+ipcMain.handle('read-directory', async (_, dirPath: string) => {
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true })
+    const files = entries
+      .filter(entry => entry.isFile() && entry.name.endsWith('.md'))
+      .map(entry => ({
+        name: entry.name,
+        path: path.join(dirPath, entry.name)
+      }))
+    return files
+  } catch (error) {
+    console.error('Error reading directory:', error)
+    return []
+  }
+})
+
+ipcMain.handle('read-file', async (_, filePath: string) => {
+  try {
+    const content = await fs.readFile(filePath, 'utf-8')
+    return content
+  } catch (error) {
+    console.error('Error reading file:', error)
+    return ''
+  }
+})
+
+ipcMain.handle('write-file', async (_, filePath: string, content: string) => {
+  try {
+    await fs.writeFile(filePath, content, 'utf-8')
+    return { success: true }
+  } catch (error) {
+    console.error('Error writing file:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+})
+
+ipcMain.handle('get-theme', () => {
+  return nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+})
+
+ipcMain.handle('is-directory', async (_, filePath: string) => {
+  try {
+    const stats = statSync(filePath)
+    return stats.isDirectory()
+  } catch (error) {
+    return false
+  }
+})
+
+nativeTheme.on('updated', () => {
+  mainWindow?.webContents.send('theme-changed', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+})
+
+// Handle file open events from macOS
+app.on('will-finish-launching', () => {
+  app.on('open-file', (event, filePath) => {
+    event.preventDefault()
+    if (mainWindow) {
+      mainWindow.webContents.send('open-file', filePath)
+    } else {
+      fileToOpen = filePath
+    }
+  })
+})
+
+// Handle file passed as command line argument
+if (process.argv.length > 1 && process.argv[1] !== '.' && !process.argv[1].startsWith('-')) {
+  fileToOpen = process.argv[1]
+}
+
+const execAsync = promisify(exec)
+
+// CLI Installation handlers
+ipcMain.handle('install-cli', async () => {
+  try {
+    const installScript = process.env.NODE_ENV === 'development'
+      ? path.join(__dirname, '../../resources/cli/install.sh')
+      : path.join(process.resourcesPath, 'cli/install.sh')
+    
+    // Check if install script exists
+    if (!existsSync(installScript)) {
+      return { success: false, error: 'Installation script not found' }
+    }
+    
+    // Make the install script executable
+    chmodSync(installScript, 0o755)
+    
+    // Open Terminal and run the install script
+    const command = `osascript -e 'tell app "Terminal" to do script "clear && bash \\"${installScript}\\""'`
+    await execAsync(command)
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error installing CLI:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+})
+
+ipcMain.handle('check-cli-installed', async () => {
+  try {
+    const { stdout } = await execAsync('which mrkdwn')
+    return { installed: stdout.trim().length > 0 }
+  } catch {
+    return { installed: false }
+  }
+})
+
+ipcMain.handle('uninstall-cli', async () => {
+  try {
+    const uninstallScript = process.env.NODE_ENV === 'development'
+      ? path.join(__dirname, '../../resources/cli/uninstall.sh')
+      : path.join(process.resourcesPath, 'cli/uninstall.sh')
+    
+    // Check if uninstall script exists
+    if (!existsSync(uninstallScript)) {
+      return { success: false, error: 'Uninstallation script not found' }
+    }
+    
+    // Make the uninstall script executable
+    chmodSync(uninstallScript, 0o755)
+    
+    // Open Terminal and run the uninstall script
+    const command = `osascript -e 'tell app "Terminal" to do script "clear && bash \"${uninstallScript}\""'`
+    await execAsync(command)
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error uninstalling CLI:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+})

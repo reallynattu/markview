@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/*
+!build/icon.icns
+!build/icon.ico
+!build/icon.png
+.DS_Store
+*.log
+.env
+.env.local
+*.dmg
