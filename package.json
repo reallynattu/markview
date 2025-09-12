@@ -12,7 +12,9 @@
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:win": "npm run build && electron-builder --win",
-    "dist:linux": "npm run build && electron-builder --linux"
+    "dist:linux": "npm run build && electron-builder --linux",
+    "release": "./scripts/release.sh",
+    "release:mac": "CSC_IDENTITY_AUTO_DISCOVERY=false npm run dist:mac"
   },
   "keywords": [],
   "author": "Your Name",

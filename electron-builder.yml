@@ -21,10 +21,12 @@ fileAssociations:
 mac:
   category: public.app-category.productivity
   icon: resources/icons/icon.icns
-  hardenedRuntime: true
+  hardenedRuntime: false
   gatekeeperAssess: false
-  entitlements: build/entitlements.mac.plist
-  entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - dmg
+    - zip
+  x64ArchFiles: "*"
 win:
   target: nsis
   icon: resources/icons/icon.ico

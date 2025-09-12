@@ -1,0 +1,105 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build for macOS
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: |
+          npm run build
+          npm run dist:mac
+          
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build
+          path: |
+            build/*.dmg
+            build/*.zip
+            build/*.blockmap
+            
+  release:
+    needs: build-mac
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-build
+          path: build/
+          
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Markview ${{ github.ref }}
+          body: |
+            ## Installation
+            
+            ### macOS
+            1. Download the `.dmg` file below
+            2. Open the downloaded file
+            3. Drag Markview to your Applications folder
+            4. **Important**: Right-click on Markview in Applications and select "Open" the first time
+               - You'll see a security warning because the app isn't notarized
+               - Click "Open" to bypass this warning
+               - This only needs to be done once
+            
+            ### Security Note
+            This app is unsigned and not notarized (to avoid Apple Developer fees). macOS will show a warning on first launch. This is normal and safe - just right-click and select "Open" to bypass it.
+            
+            ## What's New
+            See [CHANGELOG.md](https://github.com/reallynattu/markview/blob/main/CHANGELOG.md) for details.
+          draft: false
+          prerelease: false
+          
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/Markview-${{ github.ref_name }}-arm64.dmg
+          asset_name: Markview-${{ github.ref_name }}-macOS-arm64.dmg
+          asset_content_type: application/x-apple-diskimage
+          
+      - name: Upload Intel DMG
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/Markview-${{ github.ref_name }}-x64.dmg
+          asset_name: Markview-${{ github.ref_name }}-macOS-intel.dmg
+          asset_content_type: application/x-apple-diskimage
+        continue-on-error: true
