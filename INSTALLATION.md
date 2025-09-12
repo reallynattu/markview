@@ -35,10 +35,16 @@
 ### Troubleshooting
 
 **"Markview is damaged and can't be opened"**
-This happens sometimes with downloaded apps. Fix it by running:
-```bash
-xattr -cr /Applications/Markview.app
-```
+This is the most common issue with unsigned apps. Fix it by:
+
+1. Open Terminal
+2. Run this command:
+   ```bash
+   xattr -cr /Applications/Markview.app
+   ```
+3. Try opening Markview again
+
+This removes the quarantine flag that macOS adds to downloaded apps.
 
 **"The application is from an unidentified developer"**
 This is expected. Use the right-click → Open method described above.
