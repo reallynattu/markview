@@ -15,6 +15,10 @@
   <img src="https://img.shields.io/badge/built%20with-Electron%20%2B%20React-orange.svg" alt="Built with">
 </p>
 
+<p align="center">
+  <img src="resources/screenshots/light-theme-with-content.png" alt="Markview Screenshot" width="80%">
+</p>
+
 ---
 
 ## ✨ Features
@@ -46,9 +50,24 @@
 
 ## 📸 Screenshots
 
+### Light Theme
 <p align="center">
-  <img src="screenshot-light.png" alt="Markview Light Theme" width="49%">
-  <img src="screenshot-dark.png" alt="Markview Dark Theme" width="49%">
+  <img src="resources/screenshots/light-theme-with-content.png" alt="Markview Light Theme" width="90%">
+</p>
+
+### Dark Theme
+<p align="center">
+  <img src="resources/screenshots/dark-theme.png" alt="Markview Dark Theme" width="90%">
+</p>
+
+### Settings & Themes
+<p align="center">
+  <img src="resources/screenshots/settings.png" alt="Markview Settings" width="90%">
+</p>
+
+### File Browser
+<p align="center">
+  <img src="resources/screenshots/screenshot_1.png" alt="Markview File Browser" width="90%">
 </p>
 
 ## 🚀 Installation
