@@ -8,19 +8,21 @@
     "dev:electron": "tsc -p tsconfig.electron.json && NODE_ENV=development electron .",
     "build": "npm run build:vite && npm run build:electron",
     "build:vite": "vite build",
-    "build:electron": "tsc -p tsconfig.electron.json",
+    "build:electron": "tsc -p tsconfig.electron.json && cp src/main/kitten-server.py dist/main/",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
     "release": "./scripts/release.sh",
-    "release:mac": "CSC_IDENTITY_AUTO_DISCOVERY=false npm run dist:mac"
+    "release:mac": "CSC_IDENTITY_AUTO_DISCOVERY=false npm run dist:mac",
+    "setup:kitten-tts": "./scripts/setup-kitten-tts.sh"
   },
   "keywords": [],
   "author": "Your Name",
   "license": "MIT",
   "description": "Beautiful Markdown, at a glance. A minimalist, elegant markdown viewer for macOS.",
   "devDependencies": {
+    "@types/node-fetch": "2.6.13",
     "@types/react": "19.1.12",
     "@types/react-dom": "19.1.9",
     "@vitejs/plugin-react": "5.0.2",
@@ -44,14 +46,21 @@
     "@lexical/table": "0.35.0",
     "@lexical/utils": "0.35.0",
     "@types/mermaid": "9.1.0",
+    "@types/uuid": "10.0.0",
     "framer-motion": "12.23.12",
     "lexical": "0.35.0",
     "lucide-react": "0.543.0",
     "mermaid": "11.11.0",
+    "node-fetch": "2.7.0",
+    "onnxruntime-node": "1.22.0-rev",
+    "phonemizer": "1.2.1",
     "react-markdown": "10.1.0",
     "rehype-highlight": "7.0.2",
     "rehype-katex": "7.0.1",
     "remark-gfm": "4.0.1",
-    "remark-math": "6.0.0"
+    "remark-math": "6.0.0",
+    "sherpa-onnx-darwin-arm64": "1.12.13",
+    "sherpa-onnx-node": "1.12.13",
+    "uuid": "13.0.0"
   }
 }

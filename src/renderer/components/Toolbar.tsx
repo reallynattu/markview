@@ -1,5 +1,5 @@
 import React from 'react'
-import { PanelRight, Moon, Sun, Save, Undo, Redo, Edit3, Eye, Settings as SettingsIcon } from 'lucide-react'
+import { PanelRight, Moon, Sun, Save, Undo, Redo, Edit3, Eye, Settings as SettingsIcon, Volume2, Pause, Square, Play } from 'lucide-react'
 
 interface ToolbarProps {
   sidebarCollapsed: boolean
@@ -16,6 +16,11 @@ interface ToolbarProps {
   canUndo: boolean
   canRedo: boolean
   onOpenSettings: () => void
+  isSpeaking: boolean
+  isPaused: boolean
+  onSpeak: () => void
+  onPauseResume: () => void
+  onStop: () => void
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -33,6 +38,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
   canUndo,
   canRedo,
   onOpenSettings,
+  isSpeaking,
+  isPaused,
+  onSpeak,
+  onPauseResume,
+  onStop,
 }) => {
   return (
     <div className="toolbar">
@@ -84,6 +94,37 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 title="Save (⌘S)"
               >
                 <Save size={18} />
+              </button>
+            )}
+          </>
+        )}
+        
+        {currentFileName && !isEditing && (
+          <>
+            {isSpeaking ? (
+              <>
+                <button
+                  className="icon-button"
+                  onClick={onPauseResume}
+                  title={isPaused ? "Resume (Space)" : "Pause (Space)"}
+                >
+                  {isPaused ? <Play size={18} /> : <Pause size={18} />}
+                </button>
+                <button
+                  className="icon-button"
+                  onClick={onStop}
+                  title="Stop (Escape)"
+                >
+                  <Square size={18} />
+                </button>
+              </>
+            ) : (
+              <button
+                className="icon-button"
+                onClick={onSpeak}
+                title="Read Aloud (⌘R)"
+              >
+                <Volume2 size={18} />
               </button>
             )}
           </>

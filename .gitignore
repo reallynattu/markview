@@ -9,3 +9,18 @@ build/*
 .env
 .env.local
 *.dmg
+
+# Test files
+test.md
+test-*.md
+sample.md
+sample-*.md
+
+# Downloaded models and resources
+resources/piper/
+resources/sherpa-models/
+resources/screenshots/
+
+# Temporary scripts
+scripts/setup-piper.sh
+scripts/setup-sherpa.sh

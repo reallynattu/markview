@@ -7,6 +7,8 @@ import Settings from './components/Settings'
 import { ElectronAPI } from '../main/preload'
 import { useHistory } from './hooks/useHistory'
 import { useResizable } from './hooks/useResizable'
+import { useTTS } from './contexts/TTSContext'
+import { markdownToText } from './utils/markdownToText'
 
 declare global {
   interface Window {
@@ -34,6 +36,7 @@ function App() {
   const [fontSize, setFontSize] = useState(16)
   const [defaultView, setDefaultView] = useState<'folder' | 'file'>('folder')
   const [colorTheme, setColorTheme] = useState<string>('default')
+  const [shouldAutoStartTTS, setShouldAutoStartTTS] = useState(false)
   
   const {
     content: historyContent,
@@ -55,6 +58,15 @@ function App() {
     maxWidth: 500,
     storageKey: 'markdown-viewer-sidebar-width'
   })
+
+  const {
+    speak,
+    pause,
+    resume,
+    stop,
+    isSpeaking,
+    isPaused
+  } = useTTS()
 
   useEffect(() => {
     // Load saved settings
@@ -88,10 +100,19 @@ function App() {
       setCurrentFolder(dirPath)
       setSelectedFile({ name: fileName, path: filePath })
       setContent(fileContent)
+      resetHistory(fileContent)
+      setHasChanges(false)
+      setIsEditing(false)
       
       // Load other files in the same directory
       const fileList = await window.electronAPI.readDirectory(dirPath)
       setFiles(fileList)
+    })
+    
+    // Handle auto-start TTS for testing
+    window.electronAPI.onAutoStartTTS(() => {
+      console.log('Auto-start TTS signal received')
+      setShouldAutoStartTTS(true)
     })
   }, [])
 
@@ -107,6 +128,16 @@ function App() {
   useEffect(() => {
     document.documentElement.style.setProperty('--content-font-size', `${fontSize}px`)
   }, [fontSize])
+
+  // Handle auto-start TTS
+  useEffect(() => {
+    if (shouldAutoStartTTS && content && !isEditing && !isSpeaking) {
+      console.log('Auto-starting TTS with content')
+      const textToSpeak = markdownToText(content)
+      speak(textToSpeak)
+      setShouldAutoStartTTS(false)
+    }
+  }, [shouldAutoStartTTS, content, isEditing, isSpeaking, speak])
 
   const handleSelectFolder = async () => {
     const folderPath = await window.electronAPI.selectFolder()
@@ -213,6 +244,34 @@ function App() {
     setHasChanges(true)
   }, [redo, historyContent])
 
+  const handleSpeak = useCallback(() => {
+    console.log('=== handleSpeak START ===')
+    console.log('Content length:', content?.length)
+    try {
+      const textToSpeak = markdownToText(content)
+      console.log('Text to speak length:', textToSpeak.length)
+      console.log('First 100 chars:', textToSpeak.substring(0, 100))
+      console.log('Calling speak function...')
+      speak(textToSpeak)
+      console.log('=== handleSpeak END ===')
+    } catch (error) {
+      console.error('=== handleSpeak ERROR ===')
+      console.error('Error in handleSpeak:', error)
+    }
+  }, [content, speak])
+
+  const handlePauseResume = useCallback(() => {
+    if (isPaused) {
+      resume()
+    } else {
+      pause()
+    }
+  }, [isPaused, pause, resume])
+
+  const handleStop = useCallback(() => {
+    stop()
+  }, [stop])
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -234,12 +293,27 @@ function App() {
       } else if ((e.metaKey || e.ctrlKey) && e.key === ',') {
         e.preventDefault()
         setIsSettingsOpen(true)
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
+        e.preventDefault()
+        if (!isEditing && content) {
+          if (isSpeaking) {
+            handleStop()
+          } else {
+            handleSpeak()
+          }
+        }
+      } else if (e.key === ' ' && isSpeaking) {
+        e.preventDefault()
+        handlePauseResume()
+      } else if (e.key === 'Escape' && isSpeaking) {
+        e.preventDefault()
+        handleStop()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleSave, handleUndo, handleRedo, canUndo, canRedo, sidebarCollapsed])
+  }, [handleSave, handleUndo, handleRedo, canUndo, canRedo, sidebarCollapsed, isEditing, content, isSpeaking, handleSpeak, handleStop, handlePauseResume])
 
   // Update content from history when undo/redo
   useEffect(() => {
@@ -374,6 +448,11 @@ function App() {
           canUndo={canUndo}
           canRedo={canRedo}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          isSpeaking={isSpeaking}
+          isPaused={isPaused}
+          onSpeak={handleSpeak}
+          onPauseResume={handlePauseResume}
+          onStop={handleStop}
         />
         <EditableMarkdownViewer 
           content={content}

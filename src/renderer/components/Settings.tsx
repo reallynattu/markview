@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { X, Sun, Moon, Monitor, Type, FileText, FolderOpen, Terminal, Check, AlertCircle } from 'lucide-react'
+import { X, Sun, Moon, Monitor, Type, FileText, FolderOpen, Terminal, Check, AlertCircle, Volume2, Square } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTTS } from '../contexts/TTSContext'
 
 interface SettingsProps {
   isOpen: boolean
@@ -30,6 +31,9 @@ const Settings: React.FC<SettingsProps> = ({
   const [cliInstalled, setCLIInstalled] = useState(false)
   const [cliInstalling, setCLIInstalling] = useState(false)
   const [cliStatus, setCLIStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' })
+  const [isTestingVoice, setIsTestingVoice] = useState(false)
+  
+  const { voices, settings: ttsSettings, updateSettings: updateTTSSettings } = useTTS()
 
   useEffect(() => {
     if (isOpen) {
@@ -263,12 +267,173 @@ const Settings: React.FC<SettingsProps> = ({
                 </div>
               </div>
 
+              {/* Text to Speech */}
+              <div className="settings-section">
+                <h3>Text to Speech</h3>
+                <div className="tts-settings">
+                  <div className="setting-item">
+                    <label>Voice</label>
+                    <div className="voice-selector">
+                      <select 
+                        className="setting-select"
+                        value={ttsSettings.voice || ''}
+                        onChange={(e) => updateTTSSettings({ voice: e.target.value })}
+                      >
+                        {voices.map(voice => {
+                          // Display voice names
+                          let displayName = voice
+                          
+                          if (voice === 'natural') {
+                            displayName = 'Natural Voice (Web TTS)'
+                          } else if (voice === 'kitten-natural') {
+                            displayName = 'KittenTTS Natural Voice'
+                          } else if (voice.startsWith('expr-voice-')) {
+                            // Format KittenTTS voice names nicely
+                            const parts = voice.split('-')
+                            const voiceNum = parts[2]
+                            const gender = parts[3] === 'm' ? 'Male' : 'Female'
+                            displayName = `KittenTTS Voice ${voiceNum} (${gender})`
+                          }
+                          
+                          return (
+                            <option key={voice} value={voice}>
+                              {displayName}
+                            </option>
+                          )
+                        })}
+                      </select>
+                      <button 
+                        className={`test-voice-button ${isTestingVoice ? 'playing' : ''}`}
+                        onClick={async () => {
+                          if (isTestingVoice) {
+                            // Stop the current test
+                            window.electronAPI.piper.stop()
+                            setIsTestingVoice(false)
+                          } else {
+                            // Stop any existing playback first
+                            window.electronAPI.piper.stop()
+                            
+                            const sampleText = "Hello, this is a test of the text-to-speech voice. The quick brown fox jumps over the lazy dog."
+                            try {
+                              setIsTestingVoice(true)
+                              const result = await window.electronAPI.piper.synthesize(sampleText, {
+                                voice: ttsSettings.voice,
+                                rate: ttsSettings.rate
+                              })
+                              // Reset state when playback completes
+                              if (result === 'speech-completed') {
+                                setIsTestingVoice(false)
+                              }
+                            } catch (error) {
+                              console.error('Failed to test voice:', error)
+                              setIsTestingVoice(false)
+                            }
+                          }
+                        }}
+                        title={isTestingVoice ? "Stop test" : "Test this voice"}
+                      >
+                        {isTestingVoice ? <Square size={16} /> : <Volume2 size={16} />}
+                        {isTestingVoice ? 'Stop' : 'Test'}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="setting-item">
+                    <label>Speed</label>
+                    <div className="slider-with-value">
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value={ttsSettings.rate}
+                        onChange={(e) => updateTTSSettings({ rate: parseFloat(e.target.value) })}
+                        className="setting-slider"
+                      />
+                      <span className="slider-value">{ttsSettings.rate}x</span>
+                    </div>
+                  </div>
+                  
+                  <div className="setting-item">
+                    <label>Pitch</label>
+                    <div className="slider-with-value">
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value={ttsSettings.pitch}
+                        onChange={(e) => updateTTSSettings({ pitch: parseFloat(e.target.value) })}
+                        className="setting-slider"
+                      />
+                      <span className="slider-value">{ttsSettings.pitch}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="setting-item">
+                    <label>Pause Between Sections</label>
+                    <div className="slider-with-value">
+                      <input
+                        type="range"
+                        min="100"
+                        max="1000"
+                        step="50"
+                        value={ttsSettings.pauseDuration || 200}
+                        onChange={(e) => updateTTSSettings({ pauseDuration: parseInt(e.target.value) })}
+                        className="setting-slider"
+                      />
+                      <span className="slider-value">{ttsSettings.pauseDuration || 200}ms</span>
+                    </div>
+                  </div>
+                  
+                  <div className="tts-keyboard-info">
+                    <p><kbd>⌘R</kbd> Read aloud</p>
+                    <p><kbd>Space</kbd> Pause/Resume</p>
+                    <p><kbd>Esc</kbd> Stop</p>
+                  </div>
+                </div>
+              </div>
+
               {/* About */}
               <div className="settings-section">
                 <h3>About</h3>
                 <div className="settings-about">
                   <p>Markview v1.0.0</p>
                   <p className="settings-muted">Beautiful Markdown, at a glance.</p>
+                </div>
+              </div>
+
+              {/* Credits */}
+              <div className="settings-section">
+                <h3>Credits</h3>
+                <div className="settings-credits">
+                  <a href="https://www.electronjs.org/" target="_blank" rel="noopener noreferrer">Electron</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://react.dev/" target="_blank" rel="noopener noreferrer">React</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://github.com/remarkjs/react-markdown" target="_blank" rel="noopener noreferrer">react-markdown</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://github.com/PrismJS/prism" target="_blank" rel="noopener noreferrer">Prism.js</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://github.com/remarkjs/remark-gfm" target="_blank" rel="noopener noreferrer">remark-gfm</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://github.com/microsoft/onnxruntime" target="_blank" rel="noopener noreferrer">ONNX Runtime</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://github.com/KoljaB/KittenTTS" target="_blank" rel="noopener noreferrer">KittenTTS</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://github.com/bootphon/phonemizer" target="_blank" rel="noopener noreferrer">Phonemizer</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://github.com/framer/motion" target="_blank" rel="noopener noreferrer">Framer Motion</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://lucide.dev/" target="_blank" rel="noopener noreferrer">Lucide Icons</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer">Mermaid</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://katex.org/" target="_blank" rel="noopener noreferrer">KaTeX</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://vitejs.dev/" target="_blank" rel="noopener noreferrer">Vite</a>
+                  <span className="credit-separator">•</span>
+                  <a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">TypeScript</a>
                 </div>
               </div>
             </div>

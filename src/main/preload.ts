@@ -14,9 +14,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onOpenFile: (callback: (filePath: string) => void) => {
     ipcRenderer.on('open-file', (_, filePath) => callback(filePath))
   },
+  onAutoStartTTS: (callback: () => void) => {
+    ipcRenderer.on('auto-start-tts', () => callback())
+  },
   installCLI: () => ipcRenderer.invoke('install-cli'),
   checkCLIInstalled: () => ipcRenderer.invoke('check-cli-installed'),
-  uninstallCLI: () => ipcRenderer.invoke('uninstall-cli')
+  uninstallCLI: () => ipcRenderer.invoke('uninstall-cli'),
+  // Piper TTS API
+  piper: {
+    getVoices: () => ipcRenderer.invoke('piper-get-voices'),
+    synthesize: (text: string, options: any) => ipcRenderer.invoke('piper-synthesize', text, options),
+    pause: () => ipcRenderer.invoke('piper-pause'),
+    resume: () => ipcRenderer.invoke('piper-resume'),
+    stop: () => ipcRenderer.invoke('piper-stop')
+  }
 })
 
 export type ElectronAPI = {
@@ -29,7 +40,15 @@ export type ElectronAPI = {
   getTheme: () => Promise<'light' | 'dark'>
   onThemeChanged: (callback: (theme: string) => void) => void
   onOpenFile: (callback: (filePath: string) => void) => void
+  onAutoStartTTS: (callback: () => void) => void
   installCLI: () => Promise<{ success: boolean; error?: string; binDir?: string }>
   checkCLIInstalled: () => Promise<{ installed: boolean }>
   uninstallCLI: () => Promise<{ success: boolean; error?: string }>
+  piper: {
+    getVoices: () => Promise<string[]>
+    synthesize: (text: string, options: any) => Promise<string>
+    pause: () => Promise<void>
+    resume: () => Promise<string>
+    stop: () => Promise<void>
+  }
 }

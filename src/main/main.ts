@@ -1,9 +1,10 @@
-import { app, BrowserWindow, ipcMain, dialog, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, nativeTheme, shell, crashReporter } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs/promises'
 import { statSync, existsSync, chmodSync } from 'fs'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { kittenTTSNode } from './kittenTTSNode'
 
 let mainWindow: BrowserWindow | null = null
 let fileToOpen: string | null = null
@@ -43,12 +44,66 @@ function createWindow() {
   })
 }
 
-app.whenReady().then(createWindow)
+// Set up crash reporter
+crashReporter.start({
+  submitURL: '', // We're not submitting anywhere, just logging
+  uploadToServer: false
+})
+
+// Log uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('=== UNCAUGHT EXCEPTION ===')
+  console.error('Error:', error)
+  console.error('Stack:', error.stack)
+  console.error('========================')
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('=== UNHANDLED REJECTION ===')
+  console.error('Promise:', promise)
+  console.error('Reason:', reason)
+  console.error('========================')
+})
+
+// Log when app is about to quit
+app.on('before-quit', (event) => {
+  console.log('=== APP BEFORE QUIT ===')
+  console.log('Event:', event)
+})
+
+app.on('will-quit', (event) => {
+  console.log('=== APP WILL QUIT ===')
+  console.log('Event:', event)
+})
+
+// Log renderer crashes
+app.on('render-process-gone', (event, webContents, details) => {
+  console.error('=== RENDERER PROCESS GONE ===')
+  console.error('Details:', details)
+  console.error('Reason:', details.reason)
+  console.error('Exit code:', details.exitCode)
+})
+
+app.whenReady().then(async () => {
+  // Initialize KittenTTS
+  try {
+    await kittenTTSNode.init()
+    console.log('KittenTTS initialized')
+  } catch (error) {
+    console.error('Failed to initialize KittenTTS:', error)
+  }
+  
+  createWindow()
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  kittenTTSNode.cleanup()
 })
 
 app.on('activate', () => {
@@ -205,4 +260,48 @@ ipcMain.handle('uninstall-cli', async () => {
     console.error('Error uninstalling CLI:', error)
     return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
+})
+
+// Enhanced TTS handlers
+ipcMain.handle('piper-get-voices', async () => {
+  console.log('IPC: piper-get-voices called')
+  try {
+    const voices = await kittenTTSNode.getAvailableVoices()
+    console.log('IPC: returning voices:', voices.length)
+    return voices
+  } catch (error) {
+    console.error('IPC: Error getting voices:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('piper-synthesize', async (_, text: string, options: any) => {
+  console.log('IPC: piper-synthesize called')
+  console.log('IPC: Text length:', text?.length)
+  console.log('IPC: Options:', options)
+  try {
+    const result = await kittenTTSNode.synthesize(text, options)
+    console.log('IPC: Synthesis result:', result)
+    return result
+  } catch (error) {
+    console.error('IPC: Error in synthesis:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('piper-pause', async () => {
+  console.log('IPC: piper-pause called')
+  kittenTTSNode.pause()
+})
+
+ipcMain.handle('piper-resume', async () => {
+  console.log('IPC: piper-resume called')
+  const result = await kittenTTSNode.resume()
+  console.log('IPC: Resume result:', result)
+  return result
+})
+
+ipcMain.handle('piper-stop', async () => {
+  console.log('IPC: piper-stop called')
+  kittenTTSNode.stop()
 })
