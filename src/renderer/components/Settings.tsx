@@ -271,6 +271,14 @@ const Settings: React.FC<SettingsProps> = ({
               <div className="settings-section">
                 <h3>Text to Speech</h3>
                 <div className="tts-settings">
+                  {voices.length === 0 ? (
+                    <div className="tts-status-message">
+                      <AlertCircle size={16} />
+                      <span>KittenTTS models not found. Voice features will be unavailable.</span>
+                      <p className="settings-muted">The models should be included with the app. Try reinstalling if this persists.</p>
+                    </div>
+                  ) : (
+                  <>
                   <div className="setting-item">
                     <label>Voice</label>
                     <div className="voice-selector">
@@ -391,6 +399,8 @@ const Settings: React.FC<SettingsProps> = ({
                     <p><kbd>Space</kbd> Pause/Resume</p>
                     <p><kbd>Esc</kbd> Stop</p>
                   </div>
+                  </>
+                  )}
                 </div>
               </div>
 

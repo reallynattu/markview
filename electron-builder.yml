@@ -7,6 +7,11 @@ files:
   - package.json
 extraResources:
   - resources/cli/**/*
+  - from: models
+    to: models
+    filter:
+      - "**/*"
+      - "!*.zip"
 fileAssociations:
   - ext: md
     name: Markdown
