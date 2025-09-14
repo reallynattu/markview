@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { X, Sun, Moon, Monitor, Type, FileText, FolderOpen, Terminal, Check, AlertCircle, Volume2, Square, RefreshCw, Bug } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTTS } from '../contexts/TTSContext'
+import { fontPairings } from '../utils/fontPairings'
 
 interface SettingsProps {
   isOpen: boolean
@@ -14,6 +15,8 @@ interface SettingsProps {
   onFontSizeChange: (size: number) => void
   defaultView: 'folder' | 'file'
   onDefaultViewChange: (view: 'folder' | 'file') => void
+  fontPairing?: string
+  onFontPairingChange?: (pairing: string) => void
 }
 
 const Settings: React.FC<SettingsProps> = ({
@@ -26,7 +29,9 @@ const Settings: React.FC<SettingsProps> = ({
   fontSize,
   onFontSizeChange,
   defaultView,
-  onDefaultViewChange
+  onDefaultViewChange,
+  fontPairing = 'default',
+  onFontPairingChange
 }) => {
   const [cliInstalled, setCLIInstalled] = useState(false)
   const [cliInstalling, setCLIInstalling] = useState(false)
@@ -192,28 +197,58 @@ const Settings: React.FC<SettingsProps> = ({
                 </div>
               </div>
 
-              {/* Font Size */}
+              {/* Typography */}
               <div className="settings-section">
-                <h3>Font Size</h3>
-                <div className="font-size-slider">
-                  <div className="slider-info">
-                    <Type size={16} />
-                    <span className="font-size-label">{fontSize}px</span>
+                <h3>Typography</h3>
+                
+                {/* Font Size */}
+                <div className="setting-item">
+                  <label>Font Size</label>
+                  <div className="font-size-slider">
+                    <div className="slider-info">
+                      <Type size={16} />
+                      <span className="font-size-label">{fontSize}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="12"
+                      max="24"
+                      value={fontSize}
+                      onChange={(e) => onFontSizeChange(Number(e.target.value))}
+                      className="font-slider"
+                    />
+                    <div className="slider-labels">
+                      <span>12px</span>
+                      <span>24px</span>
+                    </div>
                   </div>
-                  <input
-                    type="range"
-                    min="12"
-                    max="24"
-                    value={fontSize}
-                    onChange={(e) => onFontSizeChange(Number(e.target.value))}
-                    className="font-slider"
-                  />
-                  <div className="slider-labels">
-                    <span>12px</span>
-                    <span>24px</span>
-                  </div>
-                  <div className="font-preview" style={{ fontSize: `${fontSize}px` }}>
-                    The quick brown fox jumps over the lazy dog
+                </div>
+                
+                {/* Font Pairing */}
+                <div className="setting-item">
+                  <label>Font Pairing</label>
+                  <p className="setting-description">
+                    Choose a font combination for headings and body text
+                  </p>
+                  <div className="font-pairing-grid">
+                    {fontPairings.map((pairing) => (
+                      <button
+                        key={pairing.id}
+                        className={`font-pairing-option ${fontPairing === pairing.id ? 'active' : ''}`}
+                        onClick={() => onFontPairingChange?.(pairing.id)}
+                      >
+                        <div className="font-pairing-preview">
+                          <h4 style={{ fontFamily: pairing.headingFont, fontWeight: pairing.headingWeight }}>
+                            {pairing.name.split(' + ')[0]}
+                          </h4>
+                          <p style={{ fontFamily: pairing.bodyFont, fontWeight: pairing.bodyWeight }}>
+                            {pairing.name.split(' + ')[1] || 'Body Text'}
+                          </p>
+                        </div>
+                        <span className="font-pairing-name">{pairing.name}</span>
+                        <span className="font-pairing-desc">{pairing.description}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -10,6 +10,12 @@
   --border: #e0e0e0;
   --accent: #007AFF;
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  
+  /* Font variables */
+  --heading-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --heading-weight: 600;
+  --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --body-weight: 400;
 }
 
 [data-theme='dark'] {
@@ -312,34 +318,40 @@ body.resizing * {
 }
 
 .markdown-content {
+  font-family: var(--body-font);
+  font-weight: var(--body-weight);
   font-size: var(--content-font-size, 16px);
   line-height: 1.7;
   color: var(--text-primary);
 }
 
 .markdown-content h1 {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
   font-size: 32px;
-  font-weight: 600;
   margin: 24px 0;
   line-height: 1.2;
 }
 
 .markdown-content h2 {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
   font-size: 24px;
-  font-weight: 600;
   margin: 20px 0;
   line-height: 1.3;
 }
 
 .markdown-content h3 {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
   font-size: 20px;
-  font-weight: 600;
   margin: 16px 0;
   line-height: 1.4;
 }
 
 .markdown-content h4, .markdown-content h5, .markdown-content h6 {
-  font-weight: 600;
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
   margin: 12px 0;
   line-height: 1.5;
 }
@@ -3552,4 +3564,84 @@ body.resizing * {
 
 .toggle-button.active svg {
   transform: rotate(180deg);
+}
+
+/* Font Pairing Grid */
+.font-pairing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.font-pairing-option {
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.font-pairing-option:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.font-pairing-option.active {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.font-pairing-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.font-pairing-option.active .font-pairing-preview {
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.font-pairing-preview h4 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.font-pairing-preview p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.8;
+}
+
+.font-pairing-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.font-pairing-option.active .font-pairing-name {
+  color: white;
+}
+
+.font-pairing-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.font-pairing-option.active .font-pairing-desc {
+  color: rgba(255, 255, 255, 0.8);
 }

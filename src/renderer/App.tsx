@@ -22,6 +22,7 @@ import { useTTS } from './contexts/TTSContext'
 import { markdownToText } from './utils/markdownToText'
 import { perfMonitor, usePerformance } from './utils/performance'
 import { fileCache } from './utils/fileCache'
+import { fontPairings, getFontPairingById, getGoogleFontsUrl } from './utils/fontPairings'
 
 declare global {
   interface Window {
@@ -49,6 +50,7 @@ function App() {
   const [fontSize, setFontSize] = useState(16)
   const [defaultView, setDefaultView] = useState<'folder' | 'file'>('folder')
   const [colorTheme, setColorTheme] = useState<string>('default')
+  const [fontPairing, setFontPairing] = useState<string>('default')
   const [shouldAutoStartTTS, setShouldAutoStartTTS] = useState(false)
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false)
   const [isQuickOpenOpen, setIsQuickOpenOpen] = useState(false)
@@ -199,6 +201,7 @@ Stay tuned for more exciting features in future updates!`
     const savedFontSize = localStorage.getItem('fontSize')
     const savedDefaultView = localStorage.getItem('defaultView') as 'folder' | 'file' | null
     const savedColorTheme = localStorage.getItem('colorTheme')
+    const savedFontPairing = localStorage.getItem('fontPairing')
     const savedShowTOC = localStorage.getItem('showTableOfContents')
     const savedRecentFiles = localStorage.getItem('recentFiles')
     
@@ -206,6 +209,7 @@ Stay tuned for more exciting features in future updates!`
     if (savedFontSize) setFontSize(parseInt(savedFontSize))
     if (savedDefaultView) setDefaultView(savedDefaultView)
     if (savedColorTheme) setColorTheme(savedColorTheme)
+    if (savedFontPairing) setFontPairing(savedFontPairing)
     if (savedShowTOC) setShowTableOfContents(savedShowTOC === 'true')
     if (savedRecentFiles) {
       try {
@@ -263,6 +267,36 @@ Stay tuned for more exciting features in future updates!`
   useEffect(() => {
     document.documentElement.style.setProperty('--content-font-size', `${fontSize}px`)
   }, [fontSize])
+  
+  // Apply font pairing
+  useEffect(() => {
+    const pairing = getFontPairingById(fontPairing)
+    if (!pairing) return
+    
+    // Apply CSS variables
+    document.documentElement.style.setProperty('--heading-font', pairing.headingFont)
+    document.documentElement.style.setProperty('--heading-weight', pairing.headingWeight)
+    document.documentElement.style.setProperty('--body-font', pairing.bodyFont)
+    document.documentElement.style.setProperty('--body-weight', pairing.bodyWeight)
+    
+    // Load Google Fonts if needed
+    if (pairing.googleFonts && pairing.googleFonts.length > 0) {
+      const fontsUrl = getGoogleFontsUrl(pairing)
+      if (fontsUrl) {
+        // Check if fonts link already exists
+        let linkElement = document.getElementById('google-fonts-link') as HTMLLinkElement
+        
+        if (!linkElement) {
+          linkElement = document.createElement('link')
+          linkElement.id = 'google-fonts-link'
+          linkElement.rel = 'stylesheet'
+          document.head.appendChild(linkElement)
+        }
+        
+        linkElement.href = fontsUrl
+      }
+    }
+  }, [fontPairing])
 
   // Handle auto-start TTS
   useEffect(() => {
@@ -478,6 +512,11 @@ Stay tuned for more exciting features in future updates!`
   const handleColorThemeChange = (theme: string) => {
     setColorTheme(theme)
     localStorage.setItem('colorTheme', theme)
+  }
+  
+  const handleFontPairingChange = (pairingId: string) => {
+    setFontPairing(pairingId)
+    localStorage.setItem('fontPairing', pairingId)
   }
 
   const handleToggleEdit = () => {
@@ -1028,6 +1067,8 @@ Stay tuned for more exciting features in future updates!`
         onFontSizeChange={handleFontSizeChange}
         defaultView={defaultView}
         onDefaultViewChange={handleDefaultViewChange}
+        fontPairing={fontPairing}
+        onFontPairingChange={handleFontPairingChange}
       />
       
       {/* Global Search */}

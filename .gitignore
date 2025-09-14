@@ -19,7 +19,6 @@ sample-*.md
 # Downloaded models and resources
 resources/piper/
 resources/sherpa-models/
-resources/screenshots/
 
 # Temporary scripts
 scripts/setup-piper.sh
