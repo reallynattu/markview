@@ -219,11 +219,15 @@ ipcMain.handle('install-cli', async () => {
   try {
     const installScript = process.env.NODE_ENV === 'development'
       ? path.join(__dirname, '../../resources/cli/install.sh')
-      : path.join(process.resourcesPath, 'cli/install.sh')
+      : path.join(process.resourcesPath, 'resources/cli/install.sh')
+    
+    console.log('Install script path:', installScript)
+    console.log('Script exists:', existsSync(installScript))
+    console.log('Resource path:', process.resourcesPath)
     
     // Check if install script exists
     if (!existsSync(installScript)) {
-      return { success: false, error: 'Installation script not found' }
+      return { success: false, error: `Installation script not found at: ${installScript}` }
     }
     
     // Make the install script executable
@@ -253,7 +257,7 @@ ipcMain.handle('uninstall-cli', async () => {
   try {
     const uninstallScript = process.env.NODE_ENV === 'development'
       ? path.join(__dirname, '../../resources/cli/uninstall.sh')
-      : path.join(process.resourcesPath, 'cli/uninstall.sh')
+      : path.join(process.resourcesPath, 'resources/cli/uninstall.sh')
     
     // Check if uninstall script exists
     if (!existsSync(uninstallScript)) {

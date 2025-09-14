@@ -47,4 +47,3 @@ publish:
   releaseType: release
 
 # Enable automatic updates
-afterSign: scripts/notarize.js
