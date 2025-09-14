@@ -76,69 +76,69 @@ function App() {
   // What's New content
   const getWhatsNewContent = () => `# What's New in Markview
 
-We've been working hard to make Markview even better. Check out the latest features and improvements!
+Stay up to date with the latest features and improvements.
 
-## 🚀 Performance Enhancements
-**NEW** - Blazing fast performance with intelligent optimizations:
+---
+
+## Version 1.1.0
+*Released: September 14, 2024*
+
+### 🎨 Typography Customization
+- **Font Pairings** - Choose from 10 curated font combinations for headings and body text
+- **Google Fonts Integration** - Beautiful typography with automatic font loading
+- **Live Preview** - See font changes instantly in your documents
+
+### 🚀 Performance Enhancements
 - **Instant File Switching** - Files are cached and preloaded for zero-delay switching
 - **Virtual Scrolling** - Large files (>1000 lines) use virtual scrolling for smooth performance
 - **Progressive Rendering** - Medium files render progressively for faster initial display
 - **Optimistic UI Updates** - Instant feedback for all actions with smart rollback on errors
-- **Performance Monitoring** - Built-in performance tracking (enable Debug Mode in settings)
 
-## 🔧 Developer Tools
-**NEW** - Debug mode for power users and developers:
-- **Debug Mode Toggle** - Enable/disable performance metrics and developer tools in settings
-- **Performance Panel** - Real-time performance metrics with color-coded indicators
-- **Cache Statistics** - Monitor file cache usage and clear cache when needed
+### 🔧 Developer Mode
+- **Debug Mode Toggle** - Enable/disable performance metrics in settings
+- **Performance Panel** - Real-time metrics with color-coded indicators
+- **Cache Statistics** - Monitor file cache usage and performance
 - **Test Tools** - Simulate updates and test various app states
 
-## 🔍 Smart Document Search & Navigation
-**NEW** - Navigate your documents with powerful search and navigation tools:
-- **Global Search** (⌘⇧F) - Search across all markdown files in your folder with live preview
-- **Fuzzy File Finder** (⌘P) - Quickly open files with fuzzy search, just like in VS Code
-- **Table of Contents** (⌘⇧O) - Navigate through document sections with a collapsible sidebar
-- **Search & Replace** (⌘F in edit mode) - Find and replace text with regex support
+### 🎯 UI Improvements
+- **Smart Tab Bar** - Tabs only appear when multiple files are open
+- **Cleaner Interface** - Removed redundant breadcrumb navigation
+- **Settings Organization** - Moved settings to sidebar for easier access
 
-## 📥 Enhanced Export Options
-**NEW** - Export your documents in multiple formats:
-- **PDF Export** - Create beautiful PDFs with custom styling and page settings
-- **HTML Export** - Generate standalone HTML files with embedded styles
-- **Word/DOCX Export** - Export to Microsoft Word format with proper formatting
-- **Batch Export** - Export multiple files at once to PDF or HTML
-- **Print Preview** - Preview and print documents with print-specific styling
+---
 
-## 🎙️ Natural Text-to-Speech
-KittenTTS integration brings natural-sounding voices to your documents:
-- 8 different natural voices to choose from
-- Adjustable speech speed (0.5x to 2x)
-- Pause/resume functionality (Space key)
-- Stop reading (Escape key)
-- Keyboard shortcut (⌘R) to start reading
+## Version 1.0.0
+*Released: September 12, 2024*
 
-## 📝 Advanced Markdown Support
-Full GitHub Flavored Markdown with extended features:
-- Syntax highlighting for code blocks
-- Mermaid diagram support
-- KaTeX math expressions
-- Tables with proper formatting
-- Task lists and checkboxes
+### 🔄 Auto Updates
+- **Over-The-Air Updates** - Automatic background update checking
+- **Smart Notifications** - Non-intrusive update alerts
+- **One-Click Install** - Seamless update process
 
-## 🎨 Improved UI Organization
-**NEW** - Cleaner, more intuitive interface:
-- **Smart Tab Bar** - Tabs only show when multiple files are open
-- **Streamlined Interface** - Removed redundant breadcrumb bar for cleaner look
-- **Settings in Sidebar** - Quick access to settings from the sidebar
-- **Dropdown Menus** - Settings icon now shows dropdown with What's New and Settings
-- **Consistent Styling** - All modals and dialogs have unified design
-- **Dark Theme Improvements** - Better contrast and readability
+### 🔍 Document Navigation
+- **Global Search** (⌘⇧F) - Search across all markdown files
+- **Quick Open** (⌘P) - Fuzzy file finder like VS Code
+- **Table of Contents** (⌘⇧O) - Navigate through document sections
+- **Search & Replace** (⌘F) - Find and replace with regex support
 
-## 🔄 Over-The-Air Updates
-**NEW** - Automatic updates keep Markview fresh:
-- **Background Updates** - Automatically checks for updates every 4 hours
-- **Update Notifications** - Non-intrusive notifications when updates are available
-- **One-Click Install** - Download and install updates without leaving the app
-- **Manual Check** - Check for updates anytime from Settings
+### 📥 Export Features
+- **Multi-Format Export** - PDF, HTML, and Word/DOCX support
+- **Batch Export** - Export multiple files at once
+- **Custom Styling** - Page settings and format options
+- **Print Preview** - Preview before printing
+
+### 🎙️ Text-to-Speech
+- **Natural Voices** - 8 different voices powered by KittenTTS
+- **Speed Control** - Adjustable reading speed (0.5x to 2x)
+- **Keyboard Controls** - Play (⌘R), Pause (Space), Stop (Esc)
+
+### 📝 Core Features
+- **Full Markdown Support** - GitHub Flavored Markdown
+- **Syntax Highlighting** - Beautiful code blocks
+- **Mermaid Diagrams** - Create flowcharts and diagrams
+- **LaTeX Math** - Render mathematical expressions with KaTeX
+- **Multiple Themes** - Light, dark, and custom color themes
+- **Live Preview** - See changes as you type
 
 ## ⌨️ Keyboard Shortcuts
 
