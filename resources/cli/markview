@@ -5,8 +5,8 @@
 
 # Get the absolute path of the file
 if [ -z "$1" ]; then
-    echo "Usage: mrkdwn <file.md>"
-    echo "       mrkdwn <directory>"
+    echo "Usage: markview <file.md>"
+    echo "       markview <directory>"
     exit 1
 fi
 

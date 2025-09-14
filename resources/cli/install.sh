@@ -7,8 +7,8 @@ echo ""
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CLI_SOURCE="$SCRIPT_DIR/mrkdwn"
-CLI_TARGET="/usr/local/bin/mrkdwn"
+CLI_SOURCE="$SCRIPT_DIR/markview"
+CLI_TARGET="/usr/local/bin/markview"
 
 # Check if CLI script exists
 if [ ! -f "$CLI_SOURCE" ]; then
@@ -21,17 +21,17 @@ echo "Creating /usr/local/bin directory if needed..."
 sudo mkdir -p /usr/local/bin
 
 # Copy the CLI script
-echo "Installing mrkdwn command..."
+echo "Installing markview command..."
 sudo cp "$CLI_SOURCE" "$CLI_TARGET"
 
 # Make it executable
-echo "Making mrkdwn executable..."
+echo "Making markview executable..."
 sudo chmod +x "$CLI_TARGET"
 
 echo ""
 echo "✅ Installation complete!"
 echo ""
-echo "You can now use 'mrkdwn filename.md' to open markdown files."
+echo "You can now use 'markview filename.md' to open markdown files."
 echo ""
 echo "Press Enter to close this window..."
 read -r

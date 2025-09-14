@@ -242,7 +242,7 @@ ipcMain.handle('install-cli', async () => {
 
 ipcMain.handle('check-cli-installed', async () => {
   try {
-    const { stdout } = await execAsync('which mrkdwn')
+    const { stdout } = await execAsync('which markview')
     return { installed: stdout.trim().length > 0 }
   } catch {
     return { installed: false }

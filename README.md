@@ -24,17 +24,38 @@
 ## ✨ Features
 
 ### Core Features
-- **📖 Beautiful Reading Experience** - Clean typography with iA Writer-inspired design
+- **📖 Beautiful Reading Experience** - Clean typography with customizable font pairings
 - **✏️ In-Place Editing** - Seamless toggle between view and edit modes
 - **🎨 Multiple Themes** - 9 beautiful color themes including Solarized, Nord, Dracula, and more
 - **🌓 Dark/Light Mode** - Automatic theme switching based on system preferences
-- **📏 Adjustable Font Size** - Smooth slider control from 12px to 24px
+- **📏 Typography Control** - Adjustable font size and 10 curated font pairings
+
+### Performance & Navigation
+- **⚡ Lightning Fast** - Instant file switching with intelligent caching
+- **🔍 Global Search** - Search across all markdown files in your folder
+- **🚀 Quick Open** - Fuzzy file finder (⌘P) like VS Code
+- **📑 Table of Contents** - Navigate through document sections with collapsible outline
+- **🔎 Search & Replace** - Find and replace with regex support in edit mode
+- **📂 Smart Tabs** - Multi-document interface that appears when needed
+
+### Export & Sharing
+- **📥 Multi-Format Export** - Export to PDF, HTML, and Word/DOCX
+- **📦 Batch Export** - Export multiple files at once
+- **🖨️ Print Preview** - Preview before printing with custom styling
+- **⚙️ Export Options** - Custom page settings and formatting options
+
+### Advanced Features
+- **🎙️ Text-to-Speech** - Natural voices powered by KittenTTS
+- **🔄 Auto Updates** - Over-the-air updates with smart notifications
+- **🚀 Performance Mode** - Virtual scrolling for large files
+- **🔧 Debug Mode** - Performance metrics and developer tools
+- **💾 Smart Saving** - Save with ⌘S, with full undo/redo support
 
 ### File Management
 - **📁 Built-in File Browser** - Navigate folders with a collapsible sidebar
 - **🎯 Drag & Drop Support** - Drop files or folders directly onto the app
 - **📎 File Association** - Set as default app for `.md` and `.markdown` files
-- **💾 Smart Saving** - Save with ⌘S, with full undo/redo support
+- **📌 Recent Files** - Quick access to recently opened documents
 
 ### Markdown Support
 - **📊 GitHub Flavored Markdown** - Tables, task lists, strikethrough, and more
@@ -44,7 +65,7 @@
 - **🔗 Smart Links** - Clickable URLs and email addresses
 
 ### CLI Support
-- **🚀 Command Line Interface** - Open files with `mrkdwn filename.md`
+- **🚀 Command Line Interface** - Open files with `markview filename.md`
 - **⚡ Quick Access** - Launch Markview from anywhere in terminal
 - **📦 Easy Installation** - Install CLI directly from the app settings
 
@@ -89,17 +110,45 @@ brew install --cask markview
 - **Double-click** any `.md` file (after setting as default app)
 - **Drag & drop** files or folders onto the app icon or window
 - **Use sidebar** buttons to browse for files or folders
-- **Command line**: `mrkdwn README.md` (after installing CLI)
+- **Command line**: `markview README.md` (after installing CLI)
 
 ### Keyboard Shortcuts
+
+#### Essential
 | Action | Shortcut |
 |--------|----------|
 | Toggle Edit Mode | `⌘E` |
 | Save | `⌘S` |
 | Undo | `⌘Z` |
 | Redo | `⌘⇧Z` |
-| Toggle Sidebar | `⌘⌥S` |
 | Open Settings | `⌘,` |
+
+#### Navigation
+| Action | Shortcut |
+|--------|----------|
+| Quick Open | `⌘P` |
+| Global Search | `⌘⇧F` |
+| Toggle Table of Contents | `⌘⇧O` |
+| Toggle Sidebar | `⌘⌥S` |
+| Find & Replace (Edit Mode) | `⌘F` |
+
+#### Tabs
+| Action | Shortcut |
+|--------|----------|
+| Close Tab | `⌘W` |
+| Switch to Tab 1-9 | `⌘1` - `⌘9` |
+
+#### Text-to-Speech
+| Action | Shortcut |
+|--------|----------|
+| Read Aloud | `⌘R` |
+| Pause/Resume | `Space` |
+| Stop Reading | `Esc` |
+
+#### Export
+| Action | Shortcut |
+|--------|----------|
+| Export Document | `⌘⇧E` |
 
 ### Editing Workflow
 1. Open a markdown file
@@ -175,6 +224,17 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 - Add tests for new features
 - Update documentation as needed
 - Ensure all tests pass before submitting PR
+
+## 🆕 What's New in v1.1.0
+
+### Typography & Performance Update
+- **Font Pairings** - Choose from 10 curated font combinations
+- **Lightning Fast** - Instant file switching with caching
+- **Virtual Scrolling** - Smooth performance for large files
+- **Debug Mode** - Performance metrics and developer tools
+- **UI Improvements** - Cleaner interface with smart tab bar
+
+See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 ## 🐛 Known Issues
 
