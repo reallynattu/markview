@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Sun, Moon, Monitor, Type, FileText, FolderOpen, Terminal, Check, AlertCircle, Volume2, Square } from 'lucide-react'
+import { X, Sun, Moon, Monitor, Type, FileText, FolderOpen, Terminal, Check, AlertCircle, Volume2, Square, RefreshCw, Bug } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTTS } from '../contexts/TTSContext'
 
@@ -32,6 +32,11 @@ const Settings: React.FC<SettingsProps> = ({
   const [cliInstalling, setCLIInstalling] = useState(false)
   const [cliStatus, setCLIStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' })
   const [isTestingVoice, setIsTestingVoice] = useState(false)
+  const [checkingForUpdates, setCheckingForUpdates] = useState(false)
+  const [updateStatus, setUpdateStatus] = useState<{ type: 'success' | 'error' | 'info' | null; message: string }>({ type: null, message: '' })
+  const [debugMode, setDebugMode] = useState(() => {
+    return localStorage.getItem('debugMode') === 'true'
+  })
   
   const { voices, settings: ttsSettings, updateSettings: updateTTSSettings } = useTTS()
 
@@ -44,6 +49,13 @@ const Settings: React.FC<SettingsProps> = ({
   const checkCLIStatus = async () => {
     const result = await window.electronAPI.checkCLIInstalled()
     setCLIInstalled(result.installed)
+  }
+  
+  const handleDebugModeChange = (enabled: boolean) => {
+    setDebugMode(enabled)
+    localStorage.setItem('debugMode', enabled.toString())
+    // Dispatch event so other components can react
+    window.dispatchEvent(new CustomEvent('debugModeChanged', { detail: enabled }))
   }
 
   const handleInstallCLI = async () => {
@@ -90,6 +102,28 @@ const Settings: React.FC<SettingsProps> = ({
     }
     
     setCLIInstalling(false)
+  }
+
+  const handleCheckForUpdates = async () => {
+    setCheckingForUpdates(true)
+    setUpdateStatus({ type: null, message: '' })
+    
+    try {
+      const result = await window.electronAPI.checkForUpdates()
+      if (result.success) {
+        if (result.result && result.result.updateInfo) {
+          setUpdateStatus({ type: 'info', message: 'An update is available and will be downloaded in the background.' })
+        } else {
+          setUpdateStatus({ type: 'success', message: 'You are running the latest version.' })
+        }
+      } else {
+        setUpdateStatus({ type: 'error', message: result.error || 'Failed to check for updates' })
+      }
+    } catch (error) {
+      setUpdateStatus({ type: 'error', message: 'Failed to check for updates. Please try again later.' })
+    }
+    
+    setCheckingForUpdates(false)
   }
 
   const themes = [
@@ -404,12 +438,58 @@ const Settings: React.FC<SettingsProps> = ({
                 </div>
               </div>
 
+              {/* Developer */}
+              <div className="settings-section">
+                <h3>Developer</h3>
+                <div className="setting-item">
+                  <label>Debug Mode</label>
+                  <p className="setting-description">
+                    Show performance metrics and developer tools
+                  </p>
+                  <div className="setting-toggle">
+                    <button
+                      className={`toggle-button ${debugMode ? 'active' : ''}`}
+                      onClick={() => handleDebugModeChange(!debugMode)}
+                    >
+                      <Bug size={18} />
+                      {debugMode ? 'Enabled' : 'Disabled'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* About */}
               <div className="settings-section">
                 <h3>About</h3>
                 <div className="settings-about">
-                  <p>Markview v1.0.0</p>
+                  <p>Markview v1.1.0</p>
                   <p className="settings-muted">Beautiful Markdown, at a glance.</p>
+                </div>
+              </div>
+
+              {/* Updates */}
+              <div className="settings-section">
+                <h3>Updates</h3>
+                <div className="update-settings">
+                  <p className="update-description">
+                    Markview automatically checks for updates in the background and notifies you when a new version is available.
+                  </p>
+                  <button
+                    className="update-button-settings"
+                    onClick={handleCheckForUpdates}
+                    disabled={checkingForUpdates}
+                  >
+                    <RefreshCw size={18} className={checkingForUpdates ? 'spinning' : ''} />
+                    {checkingForUpdates ? 'Checking...' : 'Check for Updates'}
+                  </button>
+                  {updateStatus.type && (
+                    <div className={`update-status ${updateStatus.type}`}>
+                      {updateStatus.type === 'error' && <AlertCircle size={14} />}
+                      {updateStatus.type === 'success' && <Check size={14} />}
+                      {updateStatus.type === 'info' && <RefreshCw size={14} />}
+                      <span>{updateStatus.message}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

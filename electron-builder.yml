@@ -39,3 +39,12 @@ linux:
   target: AppImage
   category: Office
   icon: resources/icons/icon.png
+
+publish:
+  provider: github
+  owner: your-github-username
+  repo: markdown-viewer
+  releaseType: release
+
+# Enable automatic updates
+afterSign: scripts/notarize.js

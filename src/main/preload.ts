@@ -27,7 +27,38 @@ contextBridge.exposeInMainWorld('electronAPI', {
     pause: () => ipcRenderer.invoke('piper-pause'),
     resume: () => ipcRenderer.invoke('piper-resume'),
     stop: () => ipcRenderer.invoke('piper-stop')
-  }
+  },
+  // Export API
+  exportToHTML: (content: string, filePath: string, options: any) => 
+    ipcRenderer.invoke('export-html', content, filePath, options),
+  exportToPDF: (content: string, filePath: string, options: any) => 
+    ipcRenderer.invoke('export-pdf', content, filePath, options),
+  exportToDOCX: (content: string, filePath: string, options: any) => 
+    ipcRenderer.invoke('export-docx', content, filePath, options),
+  batchExport: (files: string[], format: string, options: any) => 
+    ipcRenderer.invoke('batch-export', files, format, options),
+  showPrintPreview: (content: string, filePath: string, options: any) => 
+    ipcRenderer.invoke('print-preview', content, filePath, options),
+  // Update API
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
+  onUpdateAvailable: (callback: (info: any) => void) => {
+    ipcRenderer.on('update-available', (_, info) => callback(info))
+  },
+  onUpdateDownloaded: (callback: (info: any) => void) => {
+    ipcRenderer.on('update-downloaded', (_, info) => callback(info))
+  },
+  onDownloadProgress: (callback: (progress: any) => void) => {
+    ipcRenderer.on('download-progress', (_, progress) => callback(progress))
+  },
+  onUpdateError: (callback: (error: string) => void) => {
+    ipcRenderer.on('update-error', (_, error) => callback(error))
+  },
+  // Test functions (only in development)
+  testUpdateAvailable: () => ipcRenderer.invoke('test-update-available'),
+  testDownloadProgress: () => ipcRenderer.invoke('test-download-progress'),
+  testUpdateError: () => ipcRenderer.invoke('test-update-error')
 })
 
 export type ElectronAPI = {
@@ -51,4 +82,24 @@ export type ElectronAPI = {
     resume: () => Promise<string>
     stop: () => Promise<void>
   }
+  exportToHTML: (content: string, filePath: string, options: any) => 
+    Promise<{ success: boolean; path?: string; error?: string; canceled?: boolean }>
+  exportToPDF: (content: string, filePath: string, options: any) => 
+    Promise<{ success: boolean; path?: string; error?: string; canceled?: boolean }>
+  exportToDOCX: (content: string, filePath: string, options: any) => 
+    Promise<{ success: boolean; path?: string; error?: string; canceled?: boolean }>
+  batchExport: (files: string[], format: string, options: any) => 
+    Promise<{ success: boolean; results?: any[]; exportFolder?: string; error?: string; canceled?: boolean }>
+  showPrintPreview: (content: string, filePath: string, options: any) => 
+    Promise<{ success: boolean; error?: string }>
+  checkForUpdates: () => Promise<{ success: boolean; result?: any; error?: string }>
+  downloadUpdate: () => Promise<{ success: boolean; error?: string }>
+  quitAndInstall: () => void
+  onUpdateAvailable: (callback: (info: any) => void) => void
+  onUpdateDownloaded: (callback: (info: any) => void) => void
+  onDownloadProgress: (callback: (progress: any) => void) => void
+  onUpdateError: (callback: (error: string) => void) => void
+  testUpdateAvailable?: () => Promise<void>
+  testDownloadProgress?: () => Promise<void>
+  testUpdateError?: () => Promise<void>
 }

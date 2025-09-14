@@ -5,6 +5,9 @@ import { statSync, existsSync, chmodSync } from 'fs'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { kittenTTSNode } from './kittenTTSNode'
+import { exportToHTML, exportToPDF, exportToDOCX, batchExport, showPrintPreview } from './export'
+import { updateManager } from './updater'
+import { testUpdater } from './test-updater'
 
 let mainWindow: BrowserWindow | null = null
 let fileToOpen: string | null = null
@@ -40,6 +43,15 @@ function createWindow() {
     if (fileToOpen) {
       mainWindow?.webContents.send('open-file', fileToOpen)
       fileToOpen = null
+    }
+    
+    // Set up auto-updater
+    updateManager.setMainWindow(mainWindow!)
+    updateManager.scheduleUpdateCheck()
+    
+    // Set up test updater for development
+    if (process.env.NODE_ENV === 'development') {
+      testUpdater.setMainWindow(mainWindow!)
     }
   })
 }
@@ -305,3 +317,62 @@ ipcMain.handle('piper-stop', async () => {
   console.log('IPC: piper-stop called')
   kittenTTSNode.stop()
 })
+
+// Export handlers
+ipcMain.handle('export-html', async (_, content: string, filePath: string, options: any) => {
+  return await exportToHTML(content, filePath, options)
+})
+
+ipcMain.handle('export-pdf', async (_, content: string, filePath: string, options: any) => {
+  return await exportToPDF(mainWindow!, content, filePath, options)
+})
+
+ipcMain.handle('export-docx', async (_, content: string, filePath: string, options: any) => {
+  return await exportToDOCX(content, filePath, options)
+})
+
+ipcMain.handle('batch-export', async (_, files: string[], format: string, options: any) => {
+  return await batchExport(mainWindow!, files, format as 'pdf' | 'html', options)
+})
+
+ipcMain.handle('print-preview', async (_, content: string, filePath: string, options: any) => {
+  return await showPrintPreview(mainWindow!, content, filePath, options)
+})
+
+// Update handlers
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    const result = await updateManager.checkForUpdates()
+    return { success: true, result }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('download-update', async () => {
+  try {
+    await updateManager.downloadUpdate()
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('quit-and-install', () => {
+  updateManager.quitAndInstall()
+})
+
+// Test handlers for development
+if (process.env.NODE_ENV === 'development') {
+  ipcMain.handle('test-update-available', () => {
+    testUpdater.simulateUpdateAvailable()
+  })
+  
+  ipcMain.handle('test-download-progress', () => {
+    testUpdater.simulateDownloadProgress()
+  })
+  
+  ipcMain.handle('test-update-error', () => {
+    testUpdater.simulateUpdateError()
+  })
+}

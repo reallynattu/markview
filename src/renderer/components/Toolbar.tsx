@@ -1,5 +1,6 @@
 import React from 'react'
-import { PanelRight, Moon, Sun, Save, Undo, Redo, Edit3, Eye, Settings as SettingsIcon, Volume2, Pause, Square, Play } from 'lucide-react'
+import { PanelRight, Moon, Sun, Save, Undo, Redo, Edit3, Eye, Volume2, Pause, Square, Play, List, Download } from 'lucide-react'
+import { perfMonitor } from '../utils/performance'
 
 interface ToolbarProps {
   sidebarCollapsed: boolean
@@ -21,6 +22,9 @@ interface ToolbarProps {
   onSpeak: () => void
   onPauseResume: () => void
   onStop: () => void
+  showTableOfContents?: boolean
+  onToggleTOC?: () => void
+  onExport?: () => void
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -43,6 +47,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onSpeak,
   onPauseResume,
   onStop,
+  showTableOfContents,
+  onToggleTOC,
+  onExport,
 }) => {
   return (
     <div className="toolbar">
@@ -130,17 +137,31 @@ const Toolbar: React.FC<ToolbarProps> = ({
           </>
         )}
         
-        <button 
-          className="icon-button" 
-          onClick={onOpenSettings}
-          title="Settings (⌘,)"
-        >
-          <SettingsIcon size={18} />
-        </button>
+        {currentFileName && (
+          <button
+            className="icon-button"
+            onClick={onExport}
+            title="Export (⌘⇧E)"
+          >
+            <Download size={18} />
+          </button>
+        )}
+        
+        {currentFileName && !isEditing && (
+          <button
+            className="icon-button"
+            onClick={onToggleTOC}
+            title="Toggle Table of Contents (⌘⇧O)"
+          >
+            <List size={18} className={showTableOfContents ? 'active' : ''} />
+          </button>
+        )}
         
         <button 
           className="icon-button" 
-          onClick={onToggleSidebar}
+          onClick={() => {
+            perfMonitor.measure('ui.toggleSidebar', onToggleSidebar)
+          }}
           title={sidebarCollapsed ? 'Show Sidebar (⌘⌥S)' : 'Hide Sidebar (⌘⌥S)'}
         >
           <PanelRight size={18} />
