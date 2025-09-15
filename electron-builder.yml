@@ -42,8 +42,8 @@ linux:
 
 publish:
   provider: github
-  owner: your-github-username
-  repo: markdown-viewer
+  owner: reallynattu
+  repo: markview
   releaseType: release
 
 # Enable automatic updates
