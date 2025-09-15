@@ -1,6 +1,6 @@
 {
   "name": "markview",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "main": "dist/main/main.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
