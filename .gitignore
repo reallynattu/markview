@@ -22,4 +22,5 @@ resources/sherpa-models/
 
 # Temporary scripts
 scripts/setup-piper.sh
-scripts/setup-sherpa.sh
+scripts/setup-sherpa.sh.env
+set_token.sh
