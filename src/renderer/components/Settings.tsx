@@ -39,6 +39,9 @@ const Settings: React.FC<SettingsProps> = ({
   const [isTestingVoice, setIsTestingVoice] = useState(false)
   const [checkingForUpdates, setCheckingForUpdates] = useState(false)
   const [updateStatus, setUpdateStatus] = useState<{ type: 'success' | 'error' | 'info' | null; message: string }>({ type: null, message: '' })
+  const [downloadProgress, setDownloadProgress] = useState<{ percent: number, transferred: number, total: number, bytesPerSecond: number } | null>(null)
+  const [updateDownloaded, setUpdateDownloaded] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const [debugMode, setDebugMode] = useState(() => {
     return localStorage.getItem('debugMode') === 'true'
   })
@@ -51,9 +54,39 @@ const Settings: React.FC<SettingsProps> = ({
     }
   }, [isOpen])
 
+  useEffect(() => {
+    // Listen for update events
+    window.electronAPI.onDownloadProgress((progress) => {
+      setDownloadProgress(progress)
+      setDownloading(true)
+      setUpdateStatus({ type: 'info', message: 'Downloading update...' })
+    })
+    
+    window.electronAPI.onUpdateDownloaded(() => {
+      setUpdateDownloaded(true)
+      setDownloading(false)
+      setDownloadProgress(null)
+      setUpdateStatus({ type: 'success', message: 'Update downloaded! Restart the app to install.' })
+    })
+    
+    window.electronAPI.onUpdateError((errorMessage) => {
+      setDownloading(false)
+      setDownloadProgress(null)
+      setUpdateStatus({ type: 'error', message: errorMessage || 'Failed to download update' })
+    })
+  }, [])
+
   const checkCLIStatus = async () => {
     const result = await window.electronAPI.checkCLIInstalled()
     setCLIInstalled(result.installed)
+  }
+  
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
   
   const handleDebugModeChange = (enabled: boolean) => {
@@ -117,7 +150,9 @@ const Settings: React.FC<SettingsProps> = ({
       const result = await window.electronAPI.checkForUpdates()
       if (result.success) {
         if (result.result && result.result.updateInfo) {
-          setUpdateStatus({ type: 'info', message: 'An update is available and will be downloaded in the background.' })
+          setUpdateStatus({ type: 'info', message: 'An update is available. Starting download...' })
+          // Start the download
+          await window.electronAPI.downloadUpdate()
         } else {
           setUpdateStatus({ type: 'success', message: 'You are running the latest version.' })
         }
@@ -305,8 +340,12 @@ const Settings: React.FC<SettingsProps> = ({
                 <h3>Command Line Interface</h3>
                 <div className="cli-settings">
                   <p className="cli-description">
-                    Install the CLI to open markdown files directly from terminal using: <code>markview filename.md</code>
+                    Install the CLI to open markdown files directly from terminal:
                   </p>
+                  <div className="cli-usage">
+                    <code>markview filename.md</code> - Open a specific file<br/>
+                    <code>markview .</code> - Open current directory
+                  </div>
                   {cliInstalled ? (
                     <button
                       className="cli-button installed"
@@ -521,8 +560,26 @@ const Settings: React.FC<SettingsProps> = ({
                     <div className={`update-status ${updateStatus.type}`}>
                       {updateStatus.type === 'error' && <AlertCircle size={14} />}
                       {updateStatus.type === 'success' && <Check size={14} />}
-                      {updateStatus.type === 'info' && <RefreshCw size={14} />}
+                      {updateStatus.type === 'info' && <RefreshCw size={14} className={downloading ? 'spinning' : ''} />}
                       <span>{updateStatus.message}</span>
+                    </div>
+                  )}
+                  {downloadProgress && (
+                    <div className="update-progress-settings">
+                      <div className="progress-bar">
+                        <div 
+                          className="progress-fill" 
+                          style={{ width: `${downloadProgress.percent}%` }}
+                        />
+                      </div>
+                      <div className="progress-info">
+                        <span>{downloadProgress.percent.toFixed(0)}%</span>
+                        <span className="progress-details">
+                          {formatBytes(downloadProgress.transferred)} / {formatBytes(downloadProgress.total)}
+                          {' • '}
+                          {formatBytes(downloadProgress.bytesPerSecond)}/s
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
