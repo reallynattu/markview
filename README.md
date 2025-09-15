@@ -104,6 +104,15 @@
 brew install --cask markview
 ```
 
+### macOS Gatekeeper Issues
+If you see "Markview can't be opened because it is from an unidentified developer" or "the file is corrupted" when installing the DMG, this is macOS Gatekeeper blocking the app. To fix this:
+
+1. First try right-clicking the app and selecting "Open"
+2. If that doesn't work, run this Terminal command:
+```bash
+sudo xattr -rd com.apple.quarantine "/Applications/Markview.app"
+```
+
 ## 📝 Usage
 
 ### Opening Files
