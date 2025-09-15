@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onOpenFile: (callback: (filePath: string) => void) => {
     ipcRenderer.on('open-file', (_, filePath) => callback(filePath))
   },
+  onOpenDirectory: (callback: (dirPath: string) => void) => {
+    ipcRenderer.on('open-directory', (_, dirPath) => callback(dirPath))
+  },
   onAutoStartTTS: (callback: () => void) => {
     ipcRenderer.on('auto-start-tts', () => callback())
   },

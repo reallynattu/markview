@@ -41,7 +41,13 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     if (fileToOpen) {
-      mainWindow?.webContents.send('open-file', fileToOpen)
+      // Check if it's a directory
+      const fs = require('fs')
+      if (fs.existsSync(fileToOpen) && fs.statSync(fileToOpen).isDirectory()) {
+        mainWindow?.webContents.send('open-directory', fileToOpen)
+      } else {
+        mainWindow?.webContents.send('open-file', fileToOpen)
+      }
       fileToOpen = null
     }
     
@@ -200,7 +206,12 @@ app.on('will-finish-launching', () => {
   app.on('open-file', (event, filePath) => {
     event.preventDefault()
     if (mainWindow) {
-      mainWindow.webContents.send('open-file', filePath)
+      const fs = require('fs')
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+        mainWindow.webContents.send('open-directory', filePath)
+      } else {
+        mainWindow.webContents.send('open-file', filePath)
+      }
     } else {
       fileToOpen = filePath
     }

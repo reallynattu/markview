@@ -249,6 +249,18 @@ Stay tuned for more exciting features in future updates!`
       setFiles(fileList)
     })
     
+    // Handle opening directories from CLI
+    window.electronAPI.onOpenDirectory(async (dirPath) => {
+      setCurrentFolder(dirPath)
+      const fileList = await window.electronAPI.readDirectory(dirPath)
+      setFiles(fileList)
+      // Clear any currently selected file
+      setSelectedFile(null)
+      setContent('')
+      setHasChanges(false)
+      setIsEditing(false)
+    })
+    
     // Handle auto-start TTS for testing
     window.electronAPI.onAutoStartTTS(() => {
       console.log('Auto-start TTS signal received')

@@ -305,7 +305,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <h3>Command Line Interface</h3>
                 <div className="cli-settings">
                   <p className="cli-description">
-                    Install the CLI to open markdown files directly from terminal using: <code>mrkdwn filename.md</code>
+                    Install the CLI to open markdown files directly from terminal using: <code>markview filename.md</code>
                   </p>
                   {cliInstalled ? (
                     <button
