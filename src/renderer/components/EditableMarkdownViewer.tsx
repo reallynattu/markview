@@ -19,6 +19,9 @@ interface EditableMarkdownViewerProps {
 
 export interface EditableMarkdownViewerHandle {
   scrollToLine: (line: number, column?: number) => void
+  resetScroll: () => void
+  getScrollPosition: () => number
+  setScrollPosition: (position: number) => void
 }
 
 const EditableMarkdownViewer = forwardRef<EditableMarkdownViewerHandle, EditableMarkdownViewerProps>(({ 
@@ -154,8 +157,33 @@ const EditableMarkdownViewer = forwardRef<EditableMarkdownViewerHandle, Editable
   }, [isEditing, handleCursorChange])
 
 
-  // Expose scrollToLine method
+  // Expose scroll methods
   useImperativeHandle(ref, () => ({
+    resetScroll: () => {
+      if (containerRef.current) {
+        containerRef.current.scrollTop = 0
+      }
+      if (editorRef.current) {
+        editorRef.current.scrollTop = 0
+      }
+    },
+    getScrollPosition: () => {
+      if (containerRef.current) {
+        return containerRef.current.scrollTop
+      }
+      if (editorRef.current) {
+        return editorRef.current.scrollTop
+      }
+      return 0
+    },
+    setScrollPosition: (position: number) => {
+      if (containerRef.current) {
+        containerRef.current.scrollTop = position
+      }
+      if (editorRef.current) {
+        editorRef.current.scrollTop = position
+      }
+    },
     scrollToLine: (line: number, column?: number) => {
       if (isEditing && editorRef.current) {
         // For editor mode

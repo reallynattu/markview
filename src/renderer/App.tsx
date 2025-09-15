@@ -62,6 +62,7 @@ function App() {
   const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false)
   const [tabs, setTabs] = useState<Tab[]>([])
   const [activeTabId, setActiveTabId] = useState<string>('')
+  const [tabScrollPositions, setTabScrollPositions] = useState<Record<string, number>>({})
   
   // Optimistic updates for tabs
   const {
@@ -382,10 +383,88 @@ Stay tuned for more exciting features in future updates!`
 
   const handleSelectFile = async (file: FileInfo, line?: number) => {
     await perfMonitor.measureAsync('file.select', async () => {
+      // Save current tab's scroll position before switching
+      if (activeTabId && editorRef.current) {
+        const currentScrollPosition = editorRef.current.getScrollPosition()
+        setTabScrollPositions(prev => ({
+          ...prev,
+          [activeTabId]: currentScrollPosition
+        }))
+      }
+      
       // Check if file is already open in a tab
       const existingTab = tabs.find(tab => tab.path === file.path)
       if (existingTab) {
-        setActiveTabId(existingTab.id)
+        // Switch to the existing tab using the same logic as tab selection
+        const tabId = existingTab.id
+        
+        if (hasChanges && activeTabId !== tabId) {
+          const confirm = window.confirm('You have unsaved changes. Do you want to discard them?')
+          if (!confirm) return
+        }
+        
+        setActiveTabId(tabId)
+        
+        // Load the file content
+        let fileContent = ''
+        
+        // Try cache first for instant switching
+        const cachedContent = fileCache.get(existingTab.path)
+        if (cachedContent) {
+          fileContent = cachedContent
+          perfMonitor.measure('tab.switch.cached', () => {
+            setContent(fileContent)
+            resetHistory(fileContent)
+            setHasChanges(existingTab.hasChanges || false)
+            setIsEditing(false)
+            setSelectedFile({ name: existingTab.title, path: existingTab.path })
+            // Restore previous scroll position for this tab
+            if (editorRef.current) {
+              const savedPosition = tabScrollPositions[tabId] || 0
+              setTimeout(() => {
+                editorRef.current.setScrollPosition(savedPosition)
+              }, 50)
+            }
+          })
+          
+          // Verify cache is up to date in background
+          window.electronAPI.readFile(existingTab.path).then(freshContent => {
+            if (freshContent !== cachedContent) {
+              fileCache.set(existingTab.path, freshContent)
+              if (activeTabId === tabId) {
+                setContent(freshContent)
+                resetHistory(freshContent)
+              }
+            }
+          }).catch(console.error)
+        } else {
+          // Load from disk if not in cache
+          fileContent = await window.electronAPI.readFile(existingTab.path)
+          fileCache.set(existingTab.path, fileContent)
+          
+          perfMonitor.measure('tab.switch', () => {
+            setContent(fileContent)
+            resetHistory(fileContent)
+            setHasChanges(existingTab.hasChanges || false)
+            setIsEditing(false)
+            setSelectedFile({ name: existingTab.title, path: existingTab.path })
+            // Restore previous scroll position for this tab
+            if (editorRef.current) {
+              const savedPosition = tabScrollPositions[tabId] || 0
+              setTimeout(() => {
+                editorRef.current.setScrollPosition(savedPosition)
+              }, 50)
+            }
+          })
+        }
+        
+        // Navigate to line if specified
+        if (line && editorRef.current) {
+          setTimeout(() => {
+            editorRef.current.scrollToLine(line)
+          }, 100)
+        }
+        
         return
       }
       
@@ -436,6 +515,10 @@ Stay tuned for more exciting features in future updates!`
       resetHistory(fileContent)
       setHasChanges(false)
       setIsEditing(false)
+      // Reset scroll position for new file
+      if (editorRef.current) {
+        editorRef.current.resetScroll()
+      }
       perfMonitor.end('content.set', { 
         size: fileContent.length 
       })
@@ -671,6 +754,13 @@ Stay tuned for more exciting features in future updates!`
     
     const newTabs = tabs.filter(t => t.id !== tabId)
     setTabs(newTabs)
+    
+    // Clean up scroll position for closed tab
+    setTabScrollPositions(prev => {
+      const newPositions = { ...prev }
+      delete newPositions[tabId]
+      return newPositions
+    })
     
     // If closing the active tab, switch to another tab or clear content
     if (tabId === activeTabId) {
@@ -983,14 +1073,23 @@ Stay tuned for more exciting features in future updates!`
           onExport={() => setIsExportDialogOpen(true)}
         />
         
-        {/* Tab Bar - show when there are multiple tabs */}
-        {optimisticTabs.length > 1 && (
+        {/* Tab Bar - show when there are tabs */}
+        {tabs.length > 0 && (
           <TabBar
-            tabs={optimisticTabs}
+            tabs={tabs}
             activeTabId={activeTabId}
             onSelectTab={async (tabId) => {
               const tab = tabs.find(t => t.id === tabId)
               if (!tab) return
+              
+              // Save current tab's scroll position before switching
+              if (activeTabId && editorRef.current) {
+                const currentScrollPosition = editorRef.current.getScrollPosition()
+                setTabScrollPositions(prev => ({
+                  ...prev,
+                  [activeTabId]: currentScrollPosition
+                }))
+              }
               
               if (hasChanges && activeTabId !== tabId) {
                 const confirm = window.confirm('You have unsaved changes. Do you want to discard them?')
@@ -1014,6 +1113,13 @@ Stay tuned for more exciting features in future updates!`
                     setHasChanges(tab.hasChanges || false)
                     setIsEditing(false)
                     setSelectedFile({ name: tab.title, path: tab.path })
+                    // Restore previous scroll position for this tab
+                    if (editorRef.current) {
+                      const savedPosition = tabScrollPositions[tabId] || 0
+                      setTimeout(() => {
+                        editorRef.current.setScrollPosition(savedPosition)
+                      }, 50)
+                    }
                   })
                   
                   // Verify cache is up to date in background
@@ -1040,6 +1146,13 @@ Stay tuned for more exciting features in future updates!`
                 setHasChanges(tab.hasChanges || false)
                 setIsEditing(false)
                 setSelectedFile({ name: tab.title, path: tab.path })
+                // Restore previous scroll position for this tab
+                if (editorRef.current) {
+                  const savedPosition = tabScrollPositions[tabId] || 0
+                  setTimeout(() => {
+                    editorRef.current.setScrollPosition(savedPosition)
+                  }, 50)
+                }
               })
             }}
             onCloseTab={handleCloseTab}
